@@ -1,0 +1,6 @@
+JetPAck >=4.6
+python3 >=3.6.9
+opencv >=4.1.2
+apt-get install python3-tk
+
+
