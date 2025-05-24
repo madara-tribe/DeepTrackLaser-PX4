@@ -17,22 +17,32 @@ class AbsSubscriber(Node):
         )
         self.subscription
 
-        # === Initialize Serial ===
         try:
             self.declare_parameter('arduino_path', '/dev/ttyACM0')
             arduino_path = self.get_parameter('arduino_path').get_parameter_value().string_value
             self.ser = serial.Serial(arduino_path, 9600, timeout=1)
-            time.sleep(5)  # Wait for Arduino to reset
 
-            self.initial_angle = 127
-            self.current_angle = self.initial_angle
+            # === Initial setup ===
+            self.initial_value = 124  # Corresponds to angle = 56 (via 180 - 124)
+            self.current_angle = int(180 - self.initial_value)
             self.last_received = None
 
-            self.ser.write(f"{self.current_angle}\n".encode())
-            self.get_logger().info(f"Initialized to angle: {self.current_angle}")
+            # Send initial angle
+            self.send_angle(self.current_angle)
+            self.get_logger().info(f"Servo initialized at angle: {self.current_angle}")
+            time.sleep(2)
+
         except serial.SerialException as e:
             self.get_logger().error(f"Failed to connect to Arduino: {e}")
             self.ser = None
+
+    def send_angle(self, angle):
+        if self.ser and self.ser.is_open:
+            self.ser.write(f"{angle}\n".encode())
+            self.get_logger().info(f"Sent angle: {angle}")
+
+    def map_value_to_angle(self, value):
+        return int(180 - float(value))
 
     def listener_callback(self, msg):
         self.get_logger().info(f"Received: abs_dist={msg.abs_dist:.2f}, angle_deg={msg.angle_deg:.2f}")
@@ -40,19 +50,18 @@ class AbsSubscriber(Node):
             return
 
         try:
+            mapped_angle = self.map_value_to_angle(msg.angle_deg)
+
             if self.last_received is None:
-                # First message: offset from initial
-                self.current_angle = self.initial_angle - msg.angle_deg
+                self.current_angle = mapped_angle
             else:
-                # Following messages: adjust from previous
-                delta = self.last_received - msg.angle_deg
+                delta = mapped_angle - self.last_received
                 self.current_angle += delta
 
-            self.current_angle = int(max(72, min(127, self.current_angle)))  # Clamp to range
-            self.last_received = msg.angle_deg
+            self.last_received = mapped_angle
 
-            self.ser.write(f"{self.current_angle}\n".encode())
-            self.get_logger().info(f"Sent angle {self.current_angle} to Arduino.")
+            self.send_angle(self.current_angle)
+
         except Exception as e:
             self.get_logger().error(f"Failed to send angle: {e}")
 
@@ -65,8 +74,10 @@ class AbsSubscriber(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = AbsSubscriber()
+
     try:
-        rclpy.spin(node)
+        while rclpy.ok():  # Continuous operation until stopped
+            rclpy.spin_once(node)
     except KeyboardInterrupt:
         pass
     finally:

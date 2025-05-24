@@ -1,8 +1,5 @@
 #include "inference.h"
 #include "tool.h"
-#include <sensor_msgs/msg/image.hpp>
-#include <cv_bridge/cv_bridge.h>
-#include <opencv2/opencv.hpp>
 
 #define ONNX_DEPTH_PATH "/weights/dpt_large_384.onnx"
 #define ONNX_YOLO_PATH "/weights/yolov7Tiny_640_640.onnx"
@@ -93,13 +90,35 @@ namespace onnx_inference
     std::string outputPath = "/data/" + baseName + "_result.png";
     
     for( auto result : resultVector ) {
-	double x = result.x1;
-        double y = result.y1;
-        double w = result.x2;
-        double h = result.y2;
-	
+	int x = static_cast<int>(result.x1);
+        int y = static_cast<int>(result.y1);
+        int w = static_cast<int>(result.x2);
+        int h = static_cast<int>(result.y2);
+        
+        // Fix negative values
+        if (x < 0) x = 0;
+        if (y < 0) y = 0;
+
+        // Check ranges inside image size
+        if (x >= depth_resize.cols || y >= depth_resize.rows) {
+            RCLCPP_WARN(this->get_logger(), "Invalid ROI: out of bounds (x=%d, y=%d)", x, y);
+            continue;
+        }
+
+        // Adjust w, h to be inside bounds
+        w = std::min(w, depth_resize.cols);
+        h = std::min(h, depth_resize.rows);	
+	if (x >= w || y >= h) {
+            RCLCPP_WARN(this->get_logger(), "Invalid ROI: x >= w or y >= h (x=%d, w=%d, y=%d, h=%d)", x, w, y, h);
+            continue;
+        }
 	cv::Mat cropDepth = depth_resize(cv::Range(y, h), cv::Range(x, w)).clone();
-        double relative_dist = computeMedian(cropDepth);
+        if (cropDepth.empty()) {
+            RCLCPP_WARN(this->get_logger(), "Empty crop detected at (x=%d, y=%d)", x, y);
+            continue;
+        }
+
+	double relative_dist = computeMedian(cropDepth);
         //float bbox_size = calculateBboxSize(x, y, w, h);
         double x_real_coordinate = calculateRealCoordinate(x, w);
 	double abs_dist = quadraticFunction(relative_dist);

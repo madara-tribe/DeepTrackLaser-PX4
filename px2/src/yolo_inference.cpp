@@ -1,18 +1,19 @@
 #include "yolo_inference.h"
 
 std::vector<std::string> classNames = {
-    "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
+    "person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
     "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
     "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack",
-    "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard",
+    "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball",
     "kite", "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket",
     "bottle", "wine glass", "cup", "fork", "knife", "spoon", "bowl", "banana", "apple",
     "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair",
-    "sofa", "potted plant", "bed", "dining table", "toilet", "tv monitor", "laptop",
+    "sofa", "potted plant", "bed", "dining table", "toilet", "tv monitor", "laptop", "mouse",
     "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator",
     "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
 };
-std::string TARGET = "chair";
+
+std::string TARGET = "clock";
 
 YoloDetect::YoloDetect(const std::string& modelPath){
     sessionOptions.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_ALL);
@@ -41,9 +42,8 @@ std::vector<Result> YoloDetect::postprocess(cv::Size originalImageSize, std::vec
         float accuracy          = output[i * outputShape[1] + 6];
 
         (void) confidence;
-        //if (classNames.at(classPrediction) == TARGET) {
-        if (true) {
-	// Do something
+        if (classNames.at(classPrediction) == TARGET) {
+        //if (true) {
            std::cout << "Target found!" << std::endl;
         
            // Coords should be scaled to the original image. The coords from the model are relative to the model's input height and width.
