@@ -23,8 +23,8 @@ class AbsSubscriber(Node):
             self.ser = serial.Serial(arduino_path, 9600, timeout=1)
 
             # === Initial setup ===
-            self.initial_value = 124  # Corresponds to angle = 56 (via 180 - 124)
-            self.current_angle = int(180 - self.initial_value)
+            self.initial_value = 56
+            self.current_angle = self.initial_value
             self.last_received = None
 
             # Send initial angle
@@ -38,11 +38,9 @@ class AbsSubscriber(Node):
 
     def send_angle(self, angle):
         if self.ser and self.ser.is_open:
+            angle = int(180 - float(angle))
             self.ser.write(f"{angle}\n".encode())
             self.get_logger().info(f"Sent angle: {angle}")
-
-    def map_value_to_angle(self, value):
-        return int(180 - float(value))
 
     def listener_callback(self, msg):
         self.get_logger().info(f"Received: abs_dist={msg.abs_dist:.2f}, angle_deg={msg.angle_deg:.2f}")
@@ -50,7 +48,7 @@ class AbsSubscriber(Node):
             return
 
         try:
-            mapped_angle = self.map_value_to_angle(msg.angle_deg)
+            mapped_angle = msg.angle_deg
 
             if self.last_received is None:
                 self.current_angle = mapped_angle
