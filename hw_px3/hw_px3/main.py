@@ -25,12 +25,11 @@ class AbsSubscriber(Node):
             # === Initial setup ===
             self.initial_value = 56
             self.current_angle = self.initial_value
-            self.last_received = None
 
             # Send initial angle
             self.send_angle(self.current_angle)
             self.get_logger().info(f"Servo initialized at angle: {self.current_angle}")
-            time.sleep(2)
+            time.sleep(5)
 
         except serial.SerialException as e:
             self.get_logger().error(f"Failed to connect to Arduino: {e}")
@@ -47,17 +46,13 @@ class AbsSubscriber(Node):
         if not self.ser:
             return
 
+        if msg.angle_deg==0.00:
+            print("0 angle received")
+            return
         try:
-            mapped_angle = msg.angle_deg
-
-            if self.last_received is None:
-                self.current_angle = mapped_angle
-            else:
-                delta = mapped_angle - self.last_received
-                self.current_angle += delta
-
-            self.last_received = mapped_angle
-
+            mapped_angle = msg.angle_deg + self.initial_value
+            print(f"map angle {mapped_angle}, msg_angle {msg.angle_deg}, initial {self.initial_value}")
+            self.current_angle = mapped_angle
             self.send_angle(self.current_angle)
 
         except Exception as e:
