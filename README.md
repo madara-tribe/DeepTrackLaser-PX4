@@ -11,13 +11,18 @@ This repository contains a complete laser targeting and tracking system that int
 
 ## Software (ROS 2 + Docker)
 - my_camera_pkg:
-    Launches the USB camera and publishes image data.
+
+  Launches the USB camera and publishes image data.
 - px2:
-    Subscribes to the camera image. Runs YOLO for object detection and MiDaS for depth estimation. Publishes the detected absolute distance and x-coordinate of the bounding box center to the next node.
+
+  Subscribes to the camera image. Runs YOLO for object detection and MiDaS for depth estimation. Publishes the detected absolute distance and x-coordinate of the bounding box center to the next node.
 - hw_px3:
-    Subscribes to absolute distance and x-coordinate. Computes the required servo angle based on a mathematical formula. Sends the angle to the Arduino to control the servo motor for precise laser targeting.
+
+  Subscribes to absolute distance and x-coordinate. Computes the required servo angle based on a mathematical formula. Sends the angle to the Arduino to control the servo motor for precise laser targeting.
 - custom_msg:
+
   Defines custom ROS 2 message types for data exchange between nodes.
 
 - system_launch:
+
   Launches the entire system (camera, AI modules, servo control) with a single command.
