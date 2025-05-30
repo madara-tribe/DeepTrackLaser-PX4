@@ -2,8 +2,12 @@
 
 This repository contains a complete laser targeting and tracking system that integrates hardware (Arduino, USB camera, servo motor with laser) and software components (YOLO, MiDaS, and ROS 2 packages) to accurately pinpoint and track a target in real-time.
 
-# Architecture
+
 ![Image](https://github.com/user-attachments/assets/22641f82-c14b-4e4d-9b5c-702fb662a141)
+
+
+
+# Architecture
 
 ## Hardware
 - ### USB Camera
