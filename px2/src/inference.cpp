@@ -43,12 +43,12 @@ namespace onnx_inference
       RCLCPP_INFO(rclcpp::get_logger("ImageSubscriber"), "Image received: %dx%d", latest_image_.cols, latest_image_.rows);
       
       // Generate timestamped filename
-      auto now = std::chrono::system_clock::now();
-      std::time_t now_c = std::chrono::system_clock::to_time_t(now);
-      std::stringstream filename;
-      filename << "/ros2_ws/px4/images/px2_image_"
-         << std::put_time(std::localtime(&now_c), "%Y%m%d_%H%M%S") << ".jpg";
-      cv::imwrite(filename.str(), latest_image_);
+      //auto now = std::chrono::system_clock::now();
+      //std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+      //std::stringstream filename;
+      //filename << "/ros2_ws/px4/images/px2_image_"
+      //   << std::put_time(std::localtime(&now_c), "%Y%m%d_%H%M%S") << ".jpg";
+      //cv::imwrite(filename.str(), latest_image_);
       
       //std::cout << "Found image: " << pkg_path + IMG_PATH << std::endl;
       cv::Mat yolo_image = latest_image_;
@@ -77,7 +77,8 @@ namespace onnx_inference
       auto it = subscribe_dist.begin();
       message.abs_dist = *it;
       ++it;
-      message.angle_deg = *it;
+      message.x_real_coordinate = *it;
+      message.max_x = max_x;
       publishState(message); 
   }
 
@@ -123,14 +124,14 @@ namespace onnx_inference
         double x_real_coordinate = calculateRealCoordinate(x, w);
 	double abs_dist = quadraticFunction(relative_dist);
 	abs_dist = decided_z;
-        double angle_deg = calculateClampedAngle(x_real_coordinate, abs_dist, max_x);
+
 	std::cout << "Horizontal real distance: " << x_real_coordinate << "cm" << std::endl;
-        std::cout << "relative_dist:" << relative_dist << "absolute dist:" << abs_dist << "servo angle:" << angle_deg << std::endl;
+        std::cout << "relative_dist:" << relative_dist << "absolute dist:" << abs_dist << std::endl;
 
 	subscriber_list.push_back(abs_dist);
-	subscriber_list.push_back(angle_deg);
+	subscriber_list.push_back(x_real_coordinate);
 
-	cv::putText(yolo_result, std::to_string(angle_deg),
+	cv::putText(yolo_result, std::to_string(x_real_coordinate),
                         cv::Point(x, y+50), cv::FONT_ITALIC,
                         0.8, cv::Scalar(255, 255, 0), 2);
 	if (!subscriber_list.empty()){
@@ -142,8 +143,8 @@ namespace onnx_inference
   }
   void OnnxInferenceNode::publishState(const custom_msgs::msg::AbsResult & message)
   {
-     RCLCPP_INFO(this->get_logger(), "Publishing absolute_dist: %.2f, angle_deg: %.2f",
-              message.abs_dist, message.angle_deg);
+     RCLCPP_INFO(this->get_logger(), "Publishing absolute_dist: %.2f, x_real_coordinate: %.2f, max_x: %.2f",
+              message.abs_dist, message.x_real_coordinate, message.max_x);
      publisher_->publish(message);
   }
 

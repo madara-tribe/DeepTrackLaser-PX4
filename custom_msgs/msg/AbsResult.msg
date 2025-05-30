@@ -1,2 +1,3 @@
 float32 abs_dist
-float32 angle_deg
+float32 x_real_coordinate
+float32 max_x

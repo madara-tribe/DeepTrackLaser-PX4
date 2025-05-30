@@ -1,6 +1,6 @@
 # bin/bash
 CAMERA_DEV="/dev/video4"
-ARDUINO_DEV="/dev/ttyACM0"
+ARDUINO_DEV="/dev/ttyACM1"
 # Check if Arduino and CAM device exists
 if [ ! -e "$CAMERA_DEV" ]; then
   echo "Error: $CAMERA_DEV not found on host."

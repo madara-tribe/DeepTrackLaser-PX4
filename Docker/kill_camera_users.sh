@@ -1,26 +1,25 @@
 #!/bin/bash
 
-# Verifica si 'fuser' está instalado, y si no, lo instala
-if ! command -v fuser >/dev/null 2>&1; then
-    echo "'fuser' no está instalado. Instalando 'psmisc'..."
-    if command -v apt-get >/dev/null 2>&1; then
-        sudo apt-get update
-        sudo apt-get install -y psmisc
-    elif command -v yum >/dev/null 2>&1; then
-        sudo yum install -y psmisc
-    else
-        echo "No se pudo determinar el gestor de paquetes. Instala 'psmisc' manualmente."
-        exit 1
-    fi
+set -e
+
+# Step 1: Install psmisc if not installed
+if ! command -v fuser &> /dev/null; then
+  echo "[INFO] Installing psmisc (for fuser)..."
+  sudo apt update
+  sudo apt install -y psmisc
 fi
 
-# Lista de dispositivos a liberar
-DEVICES=("/dev/video0" "/dev/video4" "/dev/ttyACM0" "/dev/ttyACM1")
+# Step 2: Check if /dev/video4 is being used
+PIDS=$(fuser /dev/video4 2>/dev/null)
 
-for dev in "${DEVICES[@]}"; do
-    echo "Checking processes using $dev"
-    fuser -k "$dev"
-done
-
-echo "All matching processes killed."
+if [ -z "$PIDS" ]; then
+  echo "[INFO] /dev/video4 is free."
+else
+  echo "[INFO] /dev/video4 is used by: $PIDS"
+  for PID in $PIDS; do
+    echo "[INFO] Killing PID $PID..."
+    sudo kill -9 "$PID"
+  done
+  echo "[INFO] All processes using /dev/video4 have been terminated."
+fi
 

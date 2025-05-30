@@ -2,7 +2,7 @@ import serial
 import time
 
 # === Serial Setup ===
-ARDUINO_PORT = '/dev/ttyACM0'  # Change if needed
+ARDUINO_PORT = '/dev/ttyACM1'  # Change if needed
 BAUD_RATE = 9600
 initial = 56
 max_angle = 108

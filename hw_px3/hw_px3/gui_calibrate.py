@@ -4,7 +4,7 @@ import tkinter as tk
 from tkinter import messagebox
 
 # === Serial Setup ===
-ARDUINO_PORT = '/dev/ttyACM0'
+ARDUINO_PORT = '/dev/ttyACM1'
 BAUD_RATE = 9600
 
 ser = None
