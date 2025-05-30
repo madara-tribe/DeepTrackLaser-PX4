@@ -38,7 +38,7 @@ This repository contains a complete laser targeting and tracking system that int
 
   Launches the entire system (camera, AI modules, servo control) with a single command.
 
-  # Experimental test movie
+# Experimental test movie (to see the movie, push image)
 
 [![Watch the video](https://github.com/user-attachments/assets/9f5923fb-3990-492e-8d17-e6e2614e2301)](https://youtu.be/hsB3fRaMJ7k)
 
